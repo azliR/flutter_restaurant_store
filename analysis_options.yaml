@@ -1,0 +1,13 @@
+include: package:lint/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - '*.g.dart'
+    - '*.gr.dart'
+    - '*.freezed.dart'
+    - 'l10n.dart'
+    - 'firebase_options.dart'
+
+linter:
+  rules:
+    prefer_single_quotes: true
