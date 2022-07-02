@@ -27,7 +27,7 @@ class StoreAdmin extends Equatable {
         email: json['email'] as String,
         role: StoreRole.fromString(json['role'] as String),
         languageCode: json['language_code'] as String,
-        createdAt: json['created_at'] as DateTime,
+        createdAt: DateTime.parse(json['created_at'] as String),
       );
 
   StoreAdmin copyWith({

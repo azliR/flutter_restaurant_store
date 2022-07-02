@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_restaurant_store/bloc/auth/auth_cubit.dart';
 import 'package:flutter_restaurant_store/bloc/report/report_cubit.dart';
 import 'package:flutter_restaurant_store/injection.dart';
 import 'package:flutter_restaurant_store/models/item_trend.dart';
@@ -12,6 +13,8 @@ class ReportPage extends StatefulWidget with AutoRouteWrapper {
 
   @override
   Widget wrappedRoute(BuildContext context) {
+    final authCubit = context.read<AuthCubit>();
+
     return BlocProvider(
       create: (_) => getIt<ReportCubit>()..getReport(),
       child: this,

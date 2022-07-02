@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_restaurant_store/bloc/core/failure.dart';
 import 'package:flutter_restaurant_store/injection.dart';
 import 'package:flutter_restaurant_store/models/item_trend.dart';
@@ -10,11 +12,16 @@ import 'package:injectable/injectable.dart';
 
 @lazySingleton
 class ReportRepository {
+  ReportRepository(this._firebaseAuth);
+
+  final FirebaseAuth _firebaseAuth;
+
   Future<void> getItemTrends({
     required void Function(Map<String, List<ItemTrend>> itemTrend) onCompleted,
     required void Function(Failure failure) onError,
   }) async {
     try {
+      final token = _firebaseAuth.currentUser!.getIdToken();
       final uri = Uri(
         scheme: getIt<LocalInjectableModule>().schemeApi,
         host: getIt<LocalInjectableModule>().hostApi,
@@ -22,7 +29,10 @@ class ReportRepository {
         path: '/api/v1/store/trend/item',
         queryParameters: {},
       );
-      final response = await http.get(uri);
+      final response = await http.get(
+        headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+        uri,
+      );
       final body = jsonDecode(response.body) as Map;
 
       if (response.statusCode != 200) {

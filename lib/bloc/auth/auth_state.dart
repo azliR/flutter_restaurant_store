@@ -5,7 +5,6 @@ enum AuthStatus { authorised, needCompletion, unauthorised }
 @immutable
 class AuthState extends Equatable {
   const AuthState({
-    this.authToken,
     this.storeAdmin,
     required this.isLoading,
     this.errorMessage,
@@ -14,7 +13,6 @@ class AuthState extends Equatable {
     required this.isSkipped,
   });
 
-  final AuthToken? authToken;
   final StoreAdmin? storeAdmin;
   final bool isLoading;
   final String? errorMessage;
@@ -33,20 +31,15 @@ class AuthState extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'authToken': authToken?.toJson(),
       'storeAdmin': storeAdmin?.toJson(),
       'isSkipped': isSkipped,
     };
   }
 
   factory AuthState.fromJson(Map<String, dynamic> map) {
-    final authTokenMap = map['authToken'] as Map?;
     final storeAdminMap = map['storeAdmin'] as Map?;
 
     return AuthState.initial().copyWith(
-      authToken: optionOf(
-        authTokenMap != null ? AuthToken.fromJson(authTokenMap.cast()) : null,
-      ),
       storeAdmin: optionOf(
         storeAdminMap != null
             ? StoreAdmin.fromJson(storeAdminMap.cast())
@@ -57,7 +50,6 @@ class AuthState extends Equatable {
   }
 
   AuthState copyWith({
-    Option<AuthToken?>? authToken,
     Option<StoreAdmin?>? storeAdmin,
     bool? isLoading,
     String? errorMessage = _defaultErrorMessage,
@@ -66,8 +58,6 @@ class AuthState extends Equatable {
     bool? isSkipped,
   }) {
     return AuthState(
-      authToken:
-          authToken != null ? authToken.getOrElse(() => null) : this.authToken,
       storeAdmin: storeAdmin != null
           ? storeAdmin.getOrElse(() => null)
           : this.storeAdmin,
@@ -85,7 +75,6 @@ class AuthState extends Equatable {
   @override
   List<Object?> get props {
     return [
-      authToken,
       storeAdmin,
       isLoading,
       errorMessage,

@@ -45,7 +45,8 @@ _i1.GetIt $initGetIt(_i1.GetIt get,
   gh.factory<_i6.OrdersCubit>(
       () => _i6.OrdersCubit(get<_i5.OrderRepository>()));
   gh.factory<_i7.PreferencesCubit>(() => _i7.PreferencesCubit());
-  gh.lazySingleton<_i8.ReportRepository>(() => _i8.ReportRepository());
+  gh.lazySingleton<_i8.ReportRepository>(
+      () => _i8.ReportRepository(get<_i3.FirebaseAuth>()));
   gh.lazySingleton<_i9.AuthRepository>(
       () => _i9.AuthRepository(get<_i3.FirebaseAuth>()));
   gh.factory<_i10.OrderDetailCubit>(

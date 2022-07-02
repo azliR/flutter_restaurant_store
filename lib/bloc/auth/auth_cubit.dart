@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_restaurant_store/models/auth/auth_token.dart';
 import 'package:flutter_restaurant_store/models/auth/store_admin.dart';
 import 'package:flutter_restaurant_store/repositories/auth_repository.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -27,7 +26,6 @@ class AuthCubit extends HydratedCubit<AuthState> {
   }) async {
     emit(state.copyWith(isLoading: true));
     _authRepository.loginStoreAdmin(
-      token: token,
       onCompleted: onCompleted,
       onError: onError,
     );
@@ -80,7 +78,6 @@ class AuthCubit extends HydratedCubit<AuthState> {
       onCompleted: () {
         emit(state.copyWith(
           storeAdmin: optionOf(null),
-          authToken: optionOf(null),
           isLoading: false,
           authStatus: AuthStatus.unauthorised,
           isSkipped: false,

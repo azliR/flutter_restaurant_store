@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -16,45 +19,71 @@ import 'package:flutter_restaurant_store/views/core/app_router.dart';
 import 'package:flutterfire_ui/auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class App extends StatelessWidget {
-  App({Key? key}) : super(key: key);
+class App extends StatefulWidget {
+  const App({Key? key}) : super(key: key);
 
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   final _appRouter = AppRouter();
+
+  final authCubit = getIt<AuthCubit>();
+  StreamSubscription<User?>? authSubscription;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      authSubscription ??=
+          authCubit.firebaseAuth.authStateChanges().listen((event) async {
+        if (event == null) {
+          print('object');
+          _appRouter.popUntilRoot();
+          _appRouter.pushWidget(
+            SignInScreen(
+              providerConfigs: const [EmailProviderConfiguration()],
+              auth: authCubit.firebaseAuth,
+            ),
+          );
+        } else {
+          final token = await event.getIdToken(true);
+          print(token);
+          authCubit.loginStoreAdmin(
+            token: token,
+            onCompleted: (storeAdmin) {
+              print(storeAdmin);
+              _appRouter.pushAndPopUntil(
+                const HomeRoute(),
+                predicate: (_) => false,
+              );
+            },
+            onError: (message) {
+              print(message);
+              authCubit.signOut();
+            },
+          );
+        }
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = getIt<AuthCubit>();
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
           create: (_) => getIt<PreferencesCubit>(),
         ),
         BlocProvider(
-          create: (_) => authCubit
-            ..firebaseAuth.authStateChanges().listen((event) async {
-              if (event == null) {
-                _appRouter.pushWidget(
-                  const SignInScreen(
-                    providerConfigs: [EmailProviderConfiguration()],
-                  ),
-                );
-              } else {
-                authCubit.loginStoreAdmin(
-                  token: await event.getIdToken(),
-                  onCompleted: (storeAdmin) {
-                    print(storeAdmin);
-                    _appRouter.pushAndPopUntil(
-                      const HomeRoute(),
-                      predicate: (_) => false,
-                    );
-                  },
-                  onError: (message) {
-                    authCubit.signOut();
-                  },
-                );
-              }
-            }),
+          create: (_) => authCubit,
         ),
       ],
       child: BlocBuilder<PreferencesCubit, PreferencesState>(
@@ -65,7 +94,8 @@ class App extends StatelessWidget {
           return MaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'Restaurant',
-            themeMode: state.themeMode,
+            // themeMode: state.themeMode,
+            themeMode: ThemeMode.dark,
             theme: ThemeData(
               useMaterial3: true,
               colorSchemeSeed: Colors.deepOrange,

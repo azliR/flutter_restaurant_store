@@ -19,7 +19,6 @@ class AuthRepository {
   FirebaseAuth get firebaseAuth => _firebaseAuth;
 
   Future<void> loginStoreAdmin({
-    required String token,
     required void Function(StoreAdmin storeAdmin) onCompleted,
     required void Function(String? message) onError,
   }) async {
@@ -30,17 +29,22 @@ class AuthRepository {
         port: getIt<LocalInjectableModule>().portApi,
         path: '/api/v1/store/auth',
       );
+      final token = await _firebaseAuth.currentUser!.getIdToken();
       final response = await http.post(
         url,
-        headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-        body: jsonEncode({'token': token}),
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
       );
       final body = (jsonDecode(response.body) as Map).cast<String, dynamic>();
       if (response.statusCode == 200) {
-        final storeAdmin = StoreAdmin.fromJson(body);
+        final storeAdmin =
+            StoreAdmin.fromJson(body['data'] as Map<String, dynamic>);
         onCompleted(storeAdmin);
       } else {
         final e = body['message'] as String?;
+        log(e.toString());
         onError(e);
       }
     } catch (e, stackTrace) {
